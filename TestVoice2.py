@@ -1,9 +1,19 @@
 import pyaudio
 import speech_recognition as sr
 from googletrans import Translator
+import pyttsx3
 
 
 def capture_and_translate():
+    engine = pyttsx3.init()
+
+    # Récupérer la liste des voix disponibles
+    voices = engine.getProperty('voices')
+
+    # Lister toutes les voix disponibles
+    for index, voice in enumerate(voices):
+        print(f"Index {index}: {voice.name} - ID: {voice.id}")
+
     # Initialiser le microphone
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -21,6 +31,11 @@ def capture_and_translate():
             translator = Translator()
             translated_text = translator.translate(text, src='en', dest='es').text
             print(f"Texte traduit : {translated_text}")
+
+            engine.setProperty('voice', voices[0].id)
+
+            engine.say(translated_text)
+            engine.runAndWait()
 
         except sr.UnknownValueError:
             print("Je n'ai pas pu comprendre l'audio.")
