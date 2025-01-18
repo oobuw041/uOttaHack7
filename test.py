@@ -1,41 +1,67 @@
-import cv2
 import easyocr
 from googletrans import Translator
+from PIL import Image, ImageDraw, ImageFont
 
 def translate_and_display_image(image_path, target_language):
-    # Initialize EasyOCR reader
-    reader = easyocr.Reader(['en', 'es'])  # Add more languages as needed
 
-    # Perform OCR
-    results = reader.readtext(image_path, detail=0)
-    extracted_text = "\n".join(results)
-    print("Extracted Text:", extracted_text)  # Optional: Debugging purposes
 
-    # Translate text
+    # Crée un lecteur OCR avec les langues que tu souhaites utiliser
+    reader = easyocr.Reader(['en', 'fr'])
+
+    # Créer un traducteur
     translator = Translator()
-    translated_text = translator.translate(extracted_text, dest=target_language).text
 
-    # Load the image with OpenCV
-    image = cv2.imread(image_path)
+    image = Image.open(image_path)
+    draw = ImageDraw.Draw(image)
 
-    # Overlay translated text on the image
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
-    font_thickness = 1
-    color = (0, 255, 0)  # Green text
-    x, y = 10, 30  # Starting position for text
+    # Lire l'image avec EasyOCR pour détecter le texte et obtenir les coordonnées
+    result = reader.readtext(image_path)
 
-    for i, line in enumerate(translated_text.split("\n")):
-        cv2.putText(image, line, (x, y + i * 20), font, font_scale, color, font_thickness)
-    print(type(image))
+    # Traiter chaque zone de texte détectée
+    for detection in result:
+        # Extraction des coordonnées et du texte
+        top_left, bottom_right, text = detection[0], detection[1], detection[1]
 
-    from matplotlib import pyplot as plt
-    plt.imshow(image, interpolation='nearest')
-    plt.show()
+        # Traduction du texte
+        translated_text = translator.translate(text, src='en', dest='fr').text
+
+        # Définir la taille et la police du texte traduit
+        font = ImageFont.load_default()
+        font_size = 30  # Tu peux ajuster la taille de la police
+        try:
+            font = ImageFont.truetype("arial.ttf", font_size)  # Utiliser une police spécifique (si disponible)
+        except IOError:
+            font = ImageFont.load_default()  # Police par défaut si "arial" n'est pas trouvé
+
+        # Calculer la taille du texte pour ajuster la position
+        text_width, text_height = draw.textsize(translated_text, font=font)
+
+        # Redimensionner le texte pour s'adapter à la boîte de détection
+        max_width = bottom_right[0] - top_left[0]
+        if text_width > max_width:
+            font_size = int(font_size * max_width / text_width)
+            font = ImageFont.truetype("arial.ttf", font_size) if font_size < 30 else font
+
+        # Ajouter un fond sous le texte pour améliorer la lisibilité (facultatif)
+        background_color = (255, 255, 255)  # Blanc
+        text_color = (0, 0, 0)  # Noir
+
+        # Dessiner le texte traduit dans la zone de texte détectée
+        draw.rectangle([top_left, bottom_right], outline="red", width=2)  # Dessiner une boîte rouge autour du texte
+        draw.text((top_left[0], top_left[1] - 10), translated_text, font=font, fill=text_color)
+
+    # Sauvegarder l'image modifiée
+    output_path = 'image_with_translated_text.jpg'
+    image.save(output_path)
+
+    # Afficher l'image modifiée
+    image.show()
+
+    print(f"L'image avec le texte traduit a été enregistrée sous : {output_path}")
 
 if __name__ == "__main__":
     # Hardcoded image path
-    image_path = r"C:\Users\joewo\OneDrive\Pictures\Screenshots\test.png"
+    image_path = r"C:\Users\ariel\Downloads\test.jpg"
     target_language = "es"  # Example: 'es' for Spanish
 
     translate_and_display_image(image_path, target_language)
