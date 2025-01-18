@@ -11,9 +11,7 @@ class Main:
     def __init__(self, locations=None):
         pygame.init()
 
-        self.win = pygame.display.set_mode(
-            pygame.display.get_desktop_sizes()[0] if (RESX, RESY) == (0, 0) else (RESX, RESY),
-            pygame.FULLSCREEN * FULLSCREEN | pygame.NOFRAME * BORDERLESS | pygame.RESIZABLE * RESIZABLE)
+        self.win = pygame.display.set_mode((RESX, RESY))
         pygame.display.set_caption(NAME)
 
         # remove after
