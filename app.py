@@ -1,6 +1,7 @@
 from colours import *
 from config import *
 
+
 class App:
     def __init__(self, main):
         self.graphics = main.graphics
@@ -9,13 +10,17 @@ class App:
         self.main = main
 
     def start(self, args=None):
+        self.scale()
+
+    def scale(self):
         pass
 
     def end(self):
         pass
 
     def update(self, dt):
-        pass
+        if self.events.resize:
+            self.scale()
 
     def draw(self):
         self.win.fill(RED)
