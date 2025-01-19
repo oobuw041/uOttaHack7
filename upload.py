@@ -13,7 +13,7 @@ import pygame
 import tkinter as tk
 from tkinter import filedialog
 import translator
-
+from TestVoice2 import capture_and_translate
 
 HERE_DEFAULT = BLUE
 HERE_HIGHLIGHT = LIGHT_BLUE
@@ -28,6 +28,8 @@ class Upload:
 
     def start(self, args=None):
         self.scale()
+
+        self.translation_thread = Thread(target=capture_and_translate)
 
         offset = 130
         rect = self.graphics.write("Drag your lecture notes or press here to upload from your computer.", (0, offset),
@@ -154,9 +156,10 @@ class Upload:
             #     path = self.get_files()
             #     if path != "":
             #         self.files.append(File(path, self))
-            if self.events.file is not None:
-                if self.events.file.endswith(".pdf"):
-                    self.files.append(File(self.events.file, self))
+            # if self.events.file is not None:
+            #     if self.events.file.endswith(".pdf"):
+            #         self.files.append(File(self.events.file, self))
+
 
         self.rotation_timer += dt
         self.loading_angle += math.sin(self.rotation_timer / 1000) * 10
@@ -212,6 +215,10 @@ class Upload:
                 else:
                     self.win.blit(self.selected.image, (self.editor_rect.x + 15, self.editor_rect.y + 15))
 
+                    if not self.translation_thread.is_alive():
+                        self.translation_thread = Thread(target=capture_and_translate)
+                        self.translation_thread.start()
+
 
 FILE_H = 50
 FILE_SPACING = 10
@@ -221,7 +228,7 @@ FILE_OFFSET = (40, 40)
 class File:
     def __init__(self, path, location):
         self.path = path
-        self.name = os.path.basename(path)
+        self .name = os.path.basename(path)
         self.location = location
         self.rect = pygame.Rect(0, 0, self.location.graphics.render_text(self.name, 30, "Naturaly", BLACK, None, None).get_width() + 30, FILE_H)
         self.image = None

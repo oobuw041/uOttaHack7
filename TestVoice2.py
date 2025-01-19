@@ -1,4 +1,3 @@
-import pyaudio
 import speech_recognition as sr
 from googletrans import Translator
 import pyttsx3
@@ -29,10 +28,10 @@ def capture_and_translate():
 
             # Traduire en français
             translator = Translator()
-            translated_text = translator.translate(text, src='en', dest='es').text
+            translated_text = translator.translate(text, src='en', dest='fr').text
             print(f"Texte traduit : {translated_text}")
 
-            engine.setProperty('voice', voices[1].id)
+            engine.setProperty('voice', voices[0].id)
 
             engine.say(translated_text)
             engine.runAndWait()
