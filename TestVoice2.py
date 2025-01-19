@@ -16,20 +16,20 @@ def capture_and_translate():
     # Initialiser le microphone
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Parlez maintenant...")
+        print("Please speak now...")
         try:
             # Capturer l'audio
             audio = recognizer.listen(source)
-            print("Traitement en cours...")
+            print("Processing in progress...")
 
             # Reconnaître la voix (langue par défaut : anglais)
             text = recognizer.recognize_google(audio, language='en-US')
-            print(f"Texte reconnu : {text}")
+            print(f"Recognized text : {text}")
 
             # Traduire en français
             translator = Translator()
             translated_text = translator.translate(text, src='en', dest='zh-CN').text
-            print(f"Texte traduit : {translated_text}")
+            print(f"Translated text : {translated_text}")
 
             engine.setProperty('voice', voices[2].id)
 
@@ -37,9 +37,9 @@ def capture_and_translate():
             engine.runAndWait()
 
         except sr.UnknownValueError:
-            print("Je n'ai pas pu comprendre l'audio.")
+            print("Sorry, I could not understand the audio.")
         except sr.RequestError as e:
-            print(f"Erreur de reconnaissance vocale : {e}")
+            print(f"Voice recognition error : {e}")
 
 
 # Exécuter la fonction
