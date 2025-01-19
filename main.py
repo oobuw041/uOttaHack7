@@ -5,6 +5,10 @@ from colours import *
 from graphics import Graphics
 from events import Events
 from app import App
+from splash import Splash
+from upload import Upload
+from uploaded import Uploaded
+from webcam import Webcam
 
 
 class Main:
@@ -27,7 +31,7 @@ class Main:
 
         self.graphics.load_folder("assets")
 
-        self.locations = {"app": App(self)}
+        self.locations = {"app": App(self), "webcam":Webcam(self), "splash":Splash(self), "upload":Upload(self), "uploaded":Uploaded(self)}
         if locations is not None:
             for key, item in locations.items():
                 self.locations[key] = item(self)
@@ -45,6 +49,7 @@ class Main:
 
     def close(self):
         self.locations[self.location].end()
+
         pygame.quit()
         sys.exit()
 
@@ -70,4 +75,4 @@ class Main:
             pygame.display.update()
 
 
-Main().run("app")
+Main().run("webcam")

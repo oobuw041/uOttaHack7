@@ -1,41 +1,17 @@
-import cv2
-import easyocr
-from googletrans import Translator
+import pdf2image
+from pdf2image import convert_from_path
+import matplotlib.pyplot as plt
 
-def translate_and_display_image(image_path, target_language):
-    # Initialize EasyOCR reader
-    reader = easyocr.Reader(['en', 'es'])  # Add more languages as needed
+# Path to the PDF file
+pdf_path = "C:/Users/joewo/Downloads/2324-0185-recruitment-activity-handout-card-6X4-proof2.pdf"
 
-    # Perform OCR
-    results = reader.readtext(image_path, detail=0)
-    extracted_text = "\n".join(results)
-    print("Extracted Text:", extracted_text)  # Optional: Debugging purposes
+# Convert PDF to images
+images = convert_from_path(pdf_path)
 
-    # Translate text
-    translator = Translator()
-    translated_text = translator.translate(extracted_text, dest=target_language).text
-
-    # Load the image with OpenCV
-    image = cv2.imread(image_path)
-
-    # Overlay translated text on the image
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
-    font_thickness = 1
-    color = (0, 255, 0)  # Green text
-    x, y = 10, 30  # Starting position for text
-
-    for i, line in enumerate(translated_text.split("\n")):
-        cv2.putText(image, line, (x, y + i * 20), font, font_scale, color, font_thickness)
-    print(type(image))
-
-    from matplotlib import pyplot as plt
-    plt.imshow(image, interpolation='nearest')
-    plt.show()
-
-if __name__ == "__main__":
-    # Hardcoded image path
-    image_path = r"C:\Users\joewo\OneDrive\Pictures\Screenshots\test.png"
-    target_language = "es"  # Example: 'es' for Spanish
-
-    translate_and_display_image(image_path, target_language)
+# Display each page using imshow
+for i, image in enumerate(images):
+    plt.figure(figsize=(10, 10))  # Set figure size for display
+    plt.imshow(image)
+    plt.axis("off")  # Hide axes
+    plt.title(f"Page {i + 1}")  # Add a title for the page
+    plt.show()  # Display the image
