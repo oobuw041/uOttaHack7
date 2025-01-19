@@ -61,6 +61,7 @@ class Upload:
         self.dragging = False
 
         self.slide_cursor = pygame.cursors.compile(pygame.cursors.sizer_x_strings)
+        self.slides = []
 
     def translate(self, file):
         self.rotation_timer = 0
@@ -77,6 +78,7 @@ class Upload:
         h = w / ar
 
         file.image = pygame.transform.smoothscale(img, (w, h))
+        file.size = w / img.get_width()
 
     def scale(self):
         pass
@@ -104,56 +106,55 @@ class Upload:
         else:
             if not self.transitioned:
                 self.transition_x = 0
+                self.selected = self.files[-1]
                 self.transitioned = True
                 self.transitioning = True
-                self.selected = self.files[0]
-                self.events.update()
 
             elif self.transitioning:
-                self.transition_x += (RESX // 2 + 10 - self.transition_x) // 8
+                self.transition_x += (RESX + 10 - self.transition_x) // 8
                 self.editor_rect.w = self.transition_x
                 self.editor_rect.x = RESX - self.transition_x
-                if self.transition_x > RESX // 2:
+                if self.transition_x > RESX:
                     self.transitioning = False
-                    self.editor_rect.w = RESX // 2
-                    self.editor_rect.x = RESX // 2
-            else:
-                if abs(self.events.x - self.editor_rect.x) < 10:
-                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZEWE)
+                    self.editor_rect.w = RESX
+                    self.editor_rect.x = 0
+            # else:
+            #     if abs(self.events.x - self.editor_rect.x) < 10:
+            #         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZEWE)
+            #
+            #         if self.events.click and not self.dragging:
+            #             self.dragging = True
+            #     else:
+            #         pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
-                    if self.events.click and not self.dragging:
-                        self.dragging = True
-                else:
-                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            # if self.dragging:
+            #     self.editor_rect.x = min(max(100, self.events.x), RESX - 180)
+            #     self.editor_rect.w = RESX - self.editor_rect.x
+            #     if not pygame.mouse.get_pressed()[0]:
+            #         self.dragging = False
+            # elif self.selected is not None:
+            #     if self.editor_rect.collidepoint(self.events.mouse) and self.selected.original_image is not None:
+            #         if self.events.scrolly != 0:
+            #             self.selected.size += self.events.scrolly / 100
+            #
+            #             img = self.selected.original_image
+            #
+            #             ar = img.get_width() / img.get_height()
+            #             w = max(30, self.selected.original_image.get_width() * self.selected.size)
+            #             h = w / ar
+            #
+            #             self.selected.image = pygame.transform.smoothscale(img, (w, h))
 
-            if self.dragging:
-                self.editor_rect.x = min(max(100, self.events.x), RESX - 180)
-                self.editor_rect.w = RESX - self.editor_rect.x
-                if not pygame.mouse.get_pressed()[0]:
-                    self.dragging = False
-            elif self.selected is not None:
-                if self.editor_rect.collidepoint(self.events.mouse) and self.selected.original_image is not None:
-                    if self.events.scrolly != 0:
-                        self.selected.size += self.events.scrolly / 100
+            # for i, file in enumerate(self.files):
+            #     file.update(i)
+            #
+            # self.add_button.bottomleft = self.win.get_rect().bottomleft
 
-                        img = self.selected.original_image
-
-                        ar = img.get_width() / img.get_height()
-                        w = max(30, self.selected.original_image.get_width() * self.selected.size)
-                        h = w / ar
-
-                        self.selected.image = pygame.transform.smoothscale(img, (w, h))
-
-            for i, file in enumerate(self.files):
-                file.update(i)
-
-            self.add_button.bottomleft = self.win.get_rect().bottomleft
-
-            if self.add_button.collidepoint(self.events.mouse) and self.events.click:
-                path = self.get_files()
-                if path != "":
-                    self.files.append(File(path, self))
-            elif self.events.file is not None:
+            # if self.add_button.collidepoint(self.events.mouse) and self.events.click:
+            #     path = self.get_files()
+            #     if path != "":
+            #         self.files.append(File(path, self))
+            if self.events.file is not None:
                 if self.events.file.endswith(".pdf"):
                     self.files.append(File(self.events.file, self))
 
@@ -193,10 +194,10 @@ class Upload:
                     self.thread = Thread(target=self.translate, args=(file,))
                     self.thread.start()
 
-            self.graphics.draw("newplus", (0, 0), center=self.add_button)
+            # self.graphics.draw("newplus", (0, 0), center=self.add_button)
 
             pygame.draw.rect(self.win, BACK_COLOUR, self.editor_rect)
-            pygame.draw.line(self.win, BLACK, self.editor_rect.topleft, self.editor_rect.bottomleft, 3)
+            # pygame.draw.line(self.win, BLACK, self.editor_rect.topleft, self.editor_rect.bottomleft, 3)
 
             # pygame.draw.circle(self.win, BACK_COLOUR, self.win.get_rect().center, abs(180 - self.loading_angle))
 
@@ -210,7 +211,6 @@ class Upload:
                     self.graphics.write("Translating file...", (0, -200), center=self.editor_rect, font="Naturaly")
                 else:
                     self.win.blit(self.selected.image, (self.editor_rect.x + 15, self.editor_rect.y + 15))
-
 
 
 FILE_H = 50
@@ -233,16 +233,17 @@ class File:
     def update(self, i):
         self.rect.topleft = FILE_OFFSET[0], FILE_OFFSET[1] + (FILE_H + FILE_SPACING) * i
 
-        self.anim += (self.rect.h * self.rect.collidepoint(self.location.events.mouse) - self.anim) // 10
-
-        if self.rect.collidepoint(self.location.events.mouse) and self.location.events.click and not self.location.editor_rect.collidepoint(self.location.events.mouse):
-            if self.location.selected is self:
-                self.location.selected = None
-            else:
-                self.location.selected = self
+        # self.anim += (self.rect.h * self.rect.collidepoint(self.location.events.mouse) - self.anim) // 10
+        #
+        # if self.rect.collidepoint(self.location.events.mouse) and self.location.events.click and not self.location.editor_rect.collidepoint(self.location.events.mouse):
+        #     if self.location.selected is self:
+        #         self.location.selected = None
+        #     else:
+        #         self.location.selected = self
 
     def draw(self):
-        pygame.draw.rect(self.location.win, RED if self.location.selected is self else BACK_COLOUR, self.rect, 0, 8)
-        # pygame.draw.rect(self.location.win, MAIN_COLOUR1, (*self.rect.topleft, self.rect.w, self.anim), 0, 8)
-
-        self.location.graphics.write(self.name, (0, 0), center=self.rect, font="Naturaly")
+        # pygame.draw.rect(self.location.win, RED if self.location.selected is self else BACK_COLOUR, self.rect, 0, 8)
+        # # pygame.draw.rect(self.location.win, MAIN_COLOUR1, (*self.rect.topleft, self.rect.w, self.anim), 0, 8)
+        #
+        # self.location.graphics.write(self.name, (0, 0), center=self.rect, font="Naturaly")
+        pass

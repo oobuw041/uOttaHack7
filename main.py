@@ -75,4 +75,4 @@ class Main:
             pygame.display.update()
 
 
-Main().run("webcam")
+Main().run("splash")
