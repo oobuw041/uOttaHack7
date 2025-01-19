@@ -28,10 +28,10 @@ def capture_and_translate():
 
             # Traduire en français
             translator = Translator()
-            translated_text = translator.translate(text, src='en', dest='fr').text
+            translated_text = translator.translate(text, src='en', dest='zh-CN').text
             print(f"Texte traduit : {translated_text}")
 
-            engine.setProperty('voice', voices[0].id)
+            engine.setProperty('voice', voices[2].id)
 
             engine.say(translated_text)
             engine.runAndWait()
